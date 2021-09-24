@@ -4,6 +4,7 @@
  * Created: 09/09/2021 10:19:59 a. m.
  * Author : GC-PC
  */ 
+// to do poner las demas condiciones dentro de la secuencia 11
 #include <avr/io.h>
 #define F_CPU 1000000UL
 #include <util/delay.h>
