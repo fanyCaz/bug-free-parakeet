@@ -1,30 +1,5 @@
 /***************************************************
-
-* Nombre:                                          *
-
-* Eduardo Salazar Treviño                          *
-
-* Estefanía Cáceres Pérez                          *
-
-* Hora clase: M4-M6                                *
-
-* Día: Jueves                                      *
-
-* N° de lista: 3,28                                *
-
-* N° de Equipo: 15                                 *
-
-* Dispositivo: ATMEGA328P                          *
-
-* Rev: 1                                           *
-
-* Propósito de la actividad:                       *
-
-*   Examen de medio curso de Controladores y       * 
-*   Microcontroladores Programables                *
-*                                                  *
-
-*                            Fecha: 24/09/21       *
+sequence of display and motor
 
 ***************************************************/ 
 #include <avr/io.h>
