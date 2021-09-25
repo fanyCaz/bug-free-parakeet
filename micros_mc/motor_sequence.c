@@ -1,17 +1,15 @@
-/*
- * FRM_compuertas.c
- *
- * Created: 09/09/2021 10:19:59 a. m.
- * Author : GC-PC
- */ 
+/***************************************************
+sequence of actions
+***************************************************/ 
 #include <avr/io.h>
 #define F_CPU 1000000UL
 #include <util/delay.h>
+#include <stdbool.h>
 //--Inputs
 #define PUSH0 PINB4
 #define PUSH1 PINB5
-#define read_PUSH0 bit_is_clear(PINB,PUSH0)
-#define read_PUSH1 bit_is_clear(PINB,PUSH1)
+#define STOP PINB6
+#define BUTTONS PINB
 //--Outputs
 
 //Display
@@ -39,69 +37,127 @@
 #define OUTM2_OFF  PORTB &=~_BV(OUTM2)
 #define OUTMEN_ON  PORTB |= _BV(OUTMEN)
 #define OUTMEN_OFF PORTB &=~_BV(OUTMEN)
-#define APAGADO      !read_PUSH0 && !read_PUSH1
-#define COUNTERCLOCK !read_PUSH0 && read_PUSH1
-#define PROCLOCK     read_PUSH0 && !read_PUSH1
-#define SEQUENCE     read_PUSH0 && read_PUSH1
 
-//--Funciones
+//Main conditions
+#define TURNEDOFF       !presionado(PINB4) && !presionado(PINB5)
+#define COUNTERCLOCK    !presionado(PINB4) && presionado(PINB5)
+#define PROCLOCK        presionado(PINB4)  && !presionado(PINB5)
+#define SEQUENCE        presionado(PINB4)  && presionado(PINB5)
+//if any other button is not pressed
+#define ANYBTNNOTPUSHED !presionado(PINB4) || !presionado(PINB5)
+#define STOPPED         presionado(PINB6)
+
+//--Functions
 void init_ports(void);
+bool presionado(char boton);
+
 int main(void)
 {
     init_ports();
-    while (1) 
+    while (1)
     {
-		
-        //APAGADO
-        if (APAGADO)
+        //SEQUENCE 00 - STOPPED
+        if (TURNEDOFF)
         {
             OUTM1_OFF;
             OUTM2_OFF;
             OUTMEN_OFF;
-			STOPLIGHT;
+            STOPLIGHT;
         }
-        //CCW
+        //SEQUENCE 01 - CCW
         else if (COUNTERCLOCK)
         {
-            OUTM1_OFF;
-            OUTM2_ON;
-            OUTMEN_ON;
-			ANTICLOCKLIGHT;
+            if (STOPPED)
+            {
+                OUTM1_OFF;
+                OUTM2_OFF;
+                OUTMEN_OFF;
+            }else{
+                OUTM1_OFF;
+                OUTM2_ON;
+                OUTMEN_ON;
+                ANTICLOCKLIGHT;
+            }
         }
-        //CCW
-		
+        //SEQUENCE 10 - CW
         else if (PROCLOCK)
         {
-            OUTM1_ON;
-            OUTM2_OFF;
-            OUTMEN_ON;
-			PROCLOCKLIGHT;
+            if (STOPPED)
+            {
+                OUTM1_OFF;
+                OUTM2_OFF;
+                OUTMEN_OFF;
+            }else{
+                OUTM1_ON;
+                OUTM2_OFF;
+                OUTMEN_ON;
+                PROCLOCKLIGHT;
+            }
         }
-		
-        //DETENIDO
+        //SEQUENCE 11 - LEFT RIGHT ON REPEAT
         else if (SEQUENCE)
         {   
-			SECUENCELIGHT;
-            OUTM1_OFF;
-            OUTM2_ON;
-            OUTMEN_ON;
-			_delay_ms(5000);
-			OUTM1_ON;
-			OUTM2_OFF;
-			OUTMEN_ON;
-			_delay_ms(5000);
-			
+            int i = 0;
+            while (i < 250)
+            {
+                if(ANYBTNNOTPUSHED){
+                    i = 251;
+                    break;
+                }
+                if (STOPPED){
+                    OUTM1_OFF;
+                    OUTM2_OFF;
+                    OUTMEN_OFF;
+                }else{
+                    SECUENCELIGHT;
+                    OUTM1_OFF;
+                    OUTM2_ON;
+                    OUTMEN_ON;
+                    i++;
+                }
+            }
+            i = 0;
+            while (i < 250)
+            {
+                if(ANYBTNNOTPUSHED){
+                    i = 251;
+                    break;
+                }
+                if (STOPPED){
+                    OUTM1_OFF;
+                    OUTM2_OFF;
+                    OUTMEN_OFF;
+                }else{
+                    SECUENCELIGHT;
+                    OUTM1_ON;
+                    OUTM2_OFF;
+                    OUTMEN_ON;
+                    i++;
+                }
+            }
         }
-    }//FIN while
-}//FIN main
+    }
+}
 void init_ports(void)
 {
     //Inputs
-    DDRB  &= ~(_BV(PUSH0) | _BV(PUSH1)); //Son Entradas
-    PORTB |=  (_BV(PUSH0) | _BV(PUSH1)); //Pull up
+    DDRB  &= ~(_BV(PUSH0) | _BV(PUSH1) | _BV(STOP)); //Son Entradas
+    PORTB |=  (_BV(PUSH0) | _BV(PUSH1) | _BV(STOP)); //Pull up
     //Outputs
     DDRB  |=  ( _BV(OUTM1) | _BV(OUTM2) | _BV(OUTMEN)); //Son salidas
     PORTB &= ~( _BV(OUTM1) | _BV(OUTM2) | _BV(OUTMEN)); // Apagadas (source)
-	DDRD |= (SEGA) | _BV(SEGB) | _BV(SEGC) | _BV(SEGD) | _BV(SEGE) | _BV(SEGF) | _BV(SEGG);
-	PORTD &= ~(_BV(SEGA) | _BV(SEGB) | _BV(SEGC) | _BV(SEGD) | _BV(SEGE) | _BV(SEGF) | _BV(SEGG));
+    DDRD |= (SEGA) | _BV(SEGB) | _BV(SEGC) | _BV(SEGD) | _BV(SEGE) | _BV(SEGF) | _BV(SEGG);
+    PORTD &= ~(_BV(SEGA) | _BV(SEGB) | _BV(SEGC) | _BV(SEGD) | _BV(SEGE) | _BV(SEGF) | _BV(SEGG));
+}
+
+bool presionado(char boton){
+    if (bit_is_clear(BUTTONS, boton))
+    {
+        _delay_ms(10);
+        if (bit_is_clear(BUTTONS, boton))
+        {
+            return true;
+        }
+    }
+    return false;
 }
