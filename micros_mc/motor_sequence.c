@@ -1,5 +1,31 @@
 /***************************************************
-sequence of actions
+
+* Nombre:                                          *
+
+* Eduardo Salazar Treviño                          *
+
+* Estefanía Cáceres Pérez                          *
+
+* Hora clase: M4-M6                                *
+
+* Día: Jueves                                      *
+
+* N° de lista: 3,28                                *
+
+* N° de Equipo: 15                                 *
+
+* Dispositivo: ATMEGA328P                          *
+
+* Rev: 1                                           *
+
+* Propósito de la actividad:                       *
+
+*   Examen de medio curso de Controladores y       * 
+*   Microcontroladores Programables                *
+*                                                  *
+
+*                            Fecha: 24/09/21       *
+
 ***************************************************/ 
 #include <avr/io.h>
 #define F_CPU 1000000UL
